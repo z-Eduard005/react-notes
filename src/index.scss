@@ -48,4 +48,22 @@ code {
     monospace;
 }
 
-@media only screen and (max-width: 1399.5px) {}
+html {
+  @apply bg-zinc-900 p-3 flex min-h-dvh max-h-dvh overflow-hidden;
+
+  body {
+    &::-webkit-scrollbar {
+      @apply w-2 max-xs:w-0.5;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      @apply bg-zinc-600 rounded-md;
+    }
+
+    &::-webkit-scrollbar-track {
+      @apply my-2 bg-transparent;
+    }
+
+    @apply bg-zinc-800 rounded-lg min-h-full min-w-full max-h-dvh p-3 overflow-auto text-zinc-100;
+  }
+}
