@@ -1,0 +1,25 @@
+.note {
+  @apply min-h-full text-lg max-md:text-base flex flex-col;
+
+  .note__title {
+    &:empty:before {
+      content: attr(data-placeholder);
+      @apply opacity-50;
+    }
+
+    @apply text-4xl max-md:text-3xl outline-none bg-inherit mb-2 font-medium;
+  }
+
+  p {
+    @apply opacity-80 mb-4;
+  }
+
+  .note__content {
+    &:empty:before {
+      content: attr(data-placeholder);
+      @apply opacity-50;
+    }
+
+    @apply outline-none bg-inherit overflow-hidden pb-3 flex-grow text-2xl max-md:text-xl
+  }
+}

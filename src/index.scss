@@ -49,9 +49,15 @@ code {
 }
 
 html {
-  @apply bg-zinc-900 p-3 flex min-h-dvh max-h-dvh overflow-hidden;
+  @apply bg-zinc-900 p-3 flex min-h-dvh max-h-dvh overflow-hidden max-xs:p-0;
 
   body {
+    @apply bg-zinc-800 rounded-lg min-h-full min-w-full max-h-dvh p-3 overflow-auto text-zinc-200 max-xs:rounded-none max-xs:pointer-events-none;
+
+    & * {
+      @apply max-xs:pointer-events-auto;
+    }
+
     &::-webkit-scrollbar {
       @apply w-2 max-xs:w-0.5;
     }
@@ -64,6 +70,8 @@ html {
       @apply my-2 bg-transparent;
     }
 
-    @apply bg-zinc-800 rounded-lg min-h-full min-w-full max-h-dvh p-3 overflow-auto text-zinc-100;
+    #root {
+      @apply h-full;
+    }
   }
 }
