@@ -22,4 +22,26 @@
 
     @apply outline-none bg-inherit overflow-hidden pb-3 flex-grow text-2xl max-md:text-xl
   }
+
+  .note__nav {
+    @apply mb-1;
+
+    a {
+      svg {
+        @apply rounded-md size-10 max-md:size-8 transition-colors duration-300;
+      }
+
+      &:hover {
+        svg {
+          @apply bg-zinc-700;
+        }
+      }
+
+      &:active {
+        svg {
+          @apply bg-zinc-800;
+        }
+      }
+    }
+  }
 }
