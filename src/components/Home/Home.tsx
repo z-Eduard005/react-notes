@@ -17,62 +17,22 @@ const Home: React.FC = () => {
         </form>
       </section>
       <div className={styles.searchMarginBottom} />
-      <section className={styles.notes}>
-        <div>
-          <h2>The </h2>
-          <p>
-            The quick brown fox jumps over the lazy dog. The quick brown fox
-            jumps over the lazy dog. The quick brown fox jumps over the lazy
-            dog.
-          </p>
-        </div>
-        <div>
-          <h2>The quick brown fox jumps over</h2>
-          <p>
-            The quick brown fox jumps over the lazy dog. The quick brown fox
-            jumps over the lazy dog
-          </p>
-        </div>
-        <div>
-          <h2>The quick </h2>
-          <p>
-            The quick brown fox jumps over the lazy dog. The quick brown fox
-            jumps over the lazy dog. The quick brown fox jumps over the lazy
-            dog. The quick brown fox jumps over the lazy dog.
-          </p>
-        </div>
-        <div>
-          <h2>The quick brown fox jumps over</h2>
-          <p>Tjumps over the lazy dog.</p>
-        </div>
-        <div>
-          <h2>The quick brown fox jumps over</h2>
-          <p>
-            The quick brown fox jumps over the lazy dog. The quick brown fox
-            jumps over the lazy dog. The quick brown fox jumps over the lazy
-            dog. The quick brown fox jumps over the lazy dog.
-          </p>
-        </div>
-        <div>
-          {/* 32 */}
-          <h2>The quick brown fox jumps over</h2>
-          {/* 150 */}
-          <p>
-            The quick brown fox jumps over the lazy dog. The quick brown fox
-            jumps over the lazy dog. The quick brown fox jumps over the lazy
-            dog. The quick brown fox jumps over the lazy dog.
-          </p>
-        </div>
-        <div>
-          <h2>The quick brown fox jumps over</h2>
-          <p>The quick</p>
-        </div>
-      </section>
+      <section className={styles.notes}></section>
       <button className={styles.createBtn} onClick={createNote}>
         <AddRoundedIcon />
       </button>
     </>
   );
 };
-
+{
+  /* <div>
+<h2>The </h2>
+<p>
+  The quick brown fox jumps over the lazy dog. The quick brown fox
+  jumps over the lazy dog. The quick brown fox jumps over the lazy
+  dog.
+</p>
+</div>
+h2-32 p-150 */
+}
 export default Home;

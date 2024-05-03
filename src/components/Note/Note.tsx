@@ -3,7 +3,7 @@ import styles from "./Note.module.scss";
 import KeyboardBackspaceRoundedIcon from "@mui/icons-material/KeyboardBackspaceRounded";
 import { Link } from "react-router-dom";
 
-type THandleChange = (
+type HandleChange = (
   setterFunc: (text: string) => void,
   disabledEnter?: boolean
 ) => (e: React.ChangeEvent<HTMLDivElement>) => void;
@@ -30,7 +30,7 @@ const Note: React.FC = () => {
     );
   }
 
-  // update time only when note is changed and close
+  // update time only when note is changed and closed
   useEffect(() => {
     return () => {
       if (isChanged) {
@@ -43,7 +43,7 @@ const Note: React.FC = () => {
     setIsChanged(true);
   }, [titleNote, contentNote]);
 
-  const handleChange: THandleChange =
+  const handleChange: HandleChange =
     (setterFunc, disabledEnter = false) =>
     (e) => {
       let text = e.target.textContent || "";
@@ -61,12 +61,6 @@ const Note: React.FC = () => {
       setterFunc(text);
     };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-    }
-  };
-
   return (
     <div className={styles.note}>
       <div className={styles.note__nav}>
@@ -80,7 +74,9 @@ const Note: React.FC = () => {
         contentEditable="plaintext-only"
         role="textbox"
         onInput={handleChange(setTitleNote, true)}
-        onKeyDown={handleKeyDown}
+        onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
+          e.key === "Enter" && e.preventDefault();
+        }}
         spellCheck="false"
       />
       <p>
