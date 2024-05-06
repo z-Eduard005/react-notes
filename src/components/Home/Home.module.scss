@@ -22,6 +22,7 @@
   }
 }
 
+// for custom sticky-position
 .searchMarginBottom {
   @apply h-20 max-2xs:h-16;
 }
@@ -51,7 +52,7 @@
 }
 
 .createBtn {
-  @apply absolute right-8 bottom-8 size-14 bg-zinc-600 text-zinc-100 p-2 rounded-full cursor-pointer transition-colors ease-in-out shadow-md shadow-zinc-900;
+  @apply absolute right-8 bottom-8 size-14 bg-zinc-600 text-zinc-100 p-2 rounded-full cursor-pointer transition-colors ease-in-out shadow-md shadow-zinc-900 max-sm:size-12 max-xs:right-6 max-xs:bottom-6;
 
   &:hover {
     @apply bg-zinc-700;
@@ -62,6 +63,6 @@
   }
 
   svg {
-    @apply text-zinc-300 size-10;
+    @apply text-zinc-300 size-11/12;
   }
 }

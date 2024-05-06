@@ -24,7 +24,8 @@
   }
 
   .note__nav {
-    @apply mb-1;
+    width: calc(100% - 2.75rem);
+    @apply z-10 fixed top-3 pt-3 pb-1 bg-zinc-800 max-xs:top-0 max-xs:w-[95%];
 
     a {
       svg {
@@ -43,5 +44,10 @@
         }
       }
     }
+  }
+
+  // for custom sticky-position
+  .noteMarginBottom {
+    @apply h-[2.75rem] max-md:h-8;
   }
 }
