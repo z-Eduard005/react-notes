@@ -23,9 +23,19 @@
     @apply outline-none bg-inherit overflow-hidden pb-3 flex-grow text-2xl max-md:text-xl
   }
 
-  .note__nav {
+  nav {
     width: calc(100% - 2.75rem);
-    @apply z-10 fixed top-3 pt-3 pb-1 bg-zinc-800 max-xs:top-0 max-xs:w-[95%];
+    @apply flex justify-between items-center z-10 fixed top-3 pt-3 pb-1 bg-zinc-800 max-xs:top-0 max-xs:w-[95%];
+
+    // for custom sticky-position
+    &::before {
+      content: "";
+      @apply absolute top-0 -left-3 h-14 w-3 bg-zinc-800 rounded-tl-lg;
+    }
+
+    >svg {
+      @apply size-10 animate-spin max-md:size-8;
+    }
 
     a {
       svg {

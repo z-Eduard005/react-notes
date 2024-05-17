@@ -1,19 +1,25 @@
 import { useEffect, useState, useRef } from "react";
 import styles from "./Note.module.scss";
 import KeyboardBackspaceRoundedIcon from "@mui/icons-material/KeyboardBackspaceRounded";
+import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 import { Link } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import {
   updateTitle,
   updateContent,
   updateTime,
-  timeNow,
+  getcurrentTime,
 } from "../../reducers/noteReducer";
+import { getdataDB, pushToDB } from "../../firebase";
+import type { NoteState } from "../../reducers/noteReducer";
 
 type HandleChange = (
   setterFunc: (text: string) => void,
+  pathDB: string,
   disabledEnter?: boolean
 ) => (e: React.ChangeEvent<HTMLDivElement>) => void;
+
+let timeoutId: NodeJS.Timeout;
 
 const Note: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -23,35 +29,37 @@ const Note: React.FC = () => {
 
   const [enterPressed, setEnterPressed] = useState<boolean>(false);
   const [stateCursorPosition, setStateCursorPosition] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const refTitle = useRef<HTMLDivElement>(null);
-  const refContent = useRef<HTMLDivElement>(null);
-
-  // update time only when note is changed and closed
-  const refStartTitle = useRef<string>(title);
-  const refStartContent = useRef<string>(content);
+  const refTitleEl = useRef<HTMLDivElement>(null);
+  const refContentEl = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    return () => {
-      if (
-        title != refStartTitle.current ||
-        content != refStartContent.current
-      ) {
-        dispatch(updateTime(timeNow()));
-      }
-    };
-  });
+    setIsLoading(true);
+    getdataDB("notes/note1")
+      .then((note: NoteState) => {
+        dispatch(updateTitle(note.title));
+        dispatch(updateContent(note.content));
+        dispatch(updateTime(note.time));
+      })
+      .catch((err: Error) => {
+        console.error(err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
-    refTitle.current!.textContent = title;
+    refTitleEl.current!.textContent = title;
   }, [title]);
 
   useEffect(() => {
-    refContent.current!.textContent = content;
+    refContentEl.current!.textContent = content;
 
     // fixed cursor position of contentEditable element
     if (enterPressed) {
-      setCursorPosition(refContent.current!, stateCursorPosition + 1);
+      setCursorPosition(refContentEl.current!, stateCursorPosition + 1);
       setEnterPressed(false);
     }
   }, [content]);
@@ -83,7 +91,7 @@ const Note: React.FC = () => {
   };
 
   const handleChange: HandleChange =
-    (setterFunc, disabledEnter = false) =>
+    (setterFunc, pathDB, disabledEnter = false) =>
     (e) => {
       let text = e.target.textContent || "";
 
@@ -93,11 +101,22 @@ const Note: React.FC = () => {
       }
 
       setterFunc(text);
+
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setIsLoading(true);
+        pushToDB(`notes/note1/${pathDB}`, text).finally(() => {
+          setIsLoading(false);
+        });
+        pushToDB("notes/note1/time", getcurrentTime());
+      }, 2000);
     };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    e.key === "Enter" && e.preventDefault();
-    if (refTitle.current!.textContent!.length > 399 && e.key !== "Backspace") {
+    if (
+      e.key === "Enter" ||
+      (refTitleEl.current!.textContent!.length > 399 && e.key !== "Backspace")
+    ) {
       e.preventDefault();
     }
   };
@@ -105,7 +124,7 @@ const Note: React.FC = () => {
   const handleTitlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
     if (
       e.clipboardData.getData("text").length >
-      400 - refTitle.current!.textContent!.length
+      400 - refTitleEl.current!.textContent!.length
     ) {
       e.preventDefault();
     }
@@ -114,41 +133,51 @@ const Note: React.FC = () => {
   const handleContentKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
       setEnterPressed(true);
-      setStateCursorPosition(getCursorPosition(refContent.current!));
+      setStateCursorPosition(getCursorPosition(refContentEl.current!));
     }
   };
 
   return (
     <div className={styles.note}>
-      <div className={styles.note__nav}>
+      <nav>
         <Link to="/">
           <KeyboardBackspaceRoundedIcon />
         </Link>
-      </div>
+        <AutorenewRoundedIcon
+          style={{ display: isLoading ? "block" : "none" }}
+        />
+      </nav>
       <div className={styles.noteMarginBottom} />
       <div
-        ref={refTitle}
+        ref={refTitleEl}
         className={styles.note__title}
         data-placeholder="Title"
         contentEditable="plaintext-only"
         role="textbox"
-        onKeyDown={handleTitleKeyDown}
-        onInput={handleChange((p: string) => dispatch(updateTitle(p)), true)}
-        onPaste={handleTitlePaste}
         spellCheck="false"
+        onKeyDown={handleTitleKeyDown}
+        onPaste={handleTitlePaste}
+        onInput={handleChange(
+          (p: string) => dispatch(updateTitle(p)),
+          "title",
+          true
+        )}
       />
       <p>
         {time} | {content.length} characters
       </p>
       <div
-        ref={refContent}
+        ref={refContentEl}
         className={styles.note__content}
         data-placeholder="Start typing"
         contentEditable="plaintext-only"
         role="textbox"
-        onInput={handleChange((p: string) => dispatch(updateContent(p)))}
         spellCheck="false"
         onKeyDown={handleContentKeyDown}
+        onInput={handleChange(
+          (p: string) => dispatch(updateContent(p)),
+          "content"
+        )}
       />
     </div>
   );

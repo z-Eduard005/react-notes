@@ -1,12 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-type NoteState = {
+export type NoteState = {
   title: string;
   content: string;
   time: string;
 };
 
-export const timeNow = (): string => {
+export const getcurrentTime = (): string => {
   const date = new Date();
   return (
     date.toLocaleDateString("en-US", {
@@ -25,7 +25,7 @@ export const timeNow = (): string => {
 const initialState: NoteState = {
   title: "",
   content: "",
-  time: timeNow(),
+  time: getcurrentTime(),
 };
 
 const noteSlice = createSlice({
