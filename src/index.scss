@@ -72,6 +72,10 @@ html {
 
     #root {
       @apply h-full;
+
+      .loader {
+        @apply animate-spin absolute top-1/4 left-1/4 size-1/2;
+      }
     }
   }
 }

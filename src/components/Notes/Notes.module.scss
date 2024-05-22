@@ -1,0 +1,31 @@
+.notes {
+  @apply pb-3 grid gap-6 grid-cols-5 max-xl:grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2 max-xs:grid-cols-1 max-2xs:gap-4;
+
+  h1 {
+    @apply text-3xl text-red-500;
+  }
+
+  >a {
+    @apply bg-zinc-400 rounded-lg w-full shadow-md shadow-zinc-900 p-3 text-zinc-900 cursor-pointer select-none transition-colors ease-in-out break-words relative;
+
+    &:hover {
+      @apply bg-zinc-500;
+    }
+
+    &:active {
+      @apply bg-zinc-700;
+    }
+
+    h2 {
+      @apply text-2xl font-medium mb-1;
+    }
+
+    p {
+      @apply text-lg mb-6
+    }
+
+    p~p {
+      @apply text-sm text-end font-semibold absolute right-3 bottom-3 mb-0;
+    }
+  }
+}

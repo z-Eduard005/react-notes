@@ -1,0 +1,11 @@
+.notFound {
+  @apply text-center flex flex-col justify-center h-full;
+
+  h1 {
+    @apply text-9xl mb-3;
+  }
+
+  p {
+    @apply text-4xl mb-3;
+  }
+}

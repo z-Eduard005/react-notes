@@ -1,0 +1,17 @@
+.backBtn {
+  svg {
+    @apply rounded-md size-10 max-md:size-8 transition-colors duration-300;
+  }
+
+  &:hover {
+    svg {
+      @apply bg-zinc-700;
+    }
+  }
+
+  &:active {
+    svg {
+      @apply bg-zinc-800;
+    }
+  }
+}

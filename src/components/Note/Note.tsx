@@ -1,17 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 import styles from "./Note.module.scss";
-import KeyboardBackspaceRoundedIcon from "@mui/icons-material/KeyboardBackspaceRounded";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import { Link } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import {
   updateTitle,
   updateContent,
   updateTime,
-  getcurrentTime,
-} from "../../reducers/noteReducer";
-import { getdataDB, pushToDB } from "../../firebase";
-import type { NoteState } from "../../reducers/noteReducer";
+} from "../../reducers/notesReducer";
+import type { NoteState } from "../../reducers/notesReducer";
+import { getDataDB, setToDB } from "../../firebase";
+import BackBtn from "../shared/BackBtn/BackBtn";
 
 type HandleChange = (
   setterFunc: (text: string) => void,
@@ -21,11 +19,11 @@ type HandleChange = (
 
 let timeoutId: NodeJS.Timeout;
 
-const Note: React.FC = () => {
+const Note: React.FC<{ id: string }> = ({ id }) => {
   const dispatch = useAppDispatch();
-  const title = useAppSelector((state) => state.note.title);
-  const content = useAppSelector((state) => state.note.content);
-  const time = useAppSelector((state) => state.note.time);
+  const { title, content, time } = useAppSelector(
+    (state) => state.notes.notesArray.find((note) => note.id === id)!
+  );
 
   const [enterPressed, setEnterPressed] = useState<boolean>(false);
   const [stateCursorPosition, setStateCursorPosition] = useState<number>(0);
@@ -36,11 +34,11 @@ const Note: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    getdataDB("notes/note1")
+    getDataDB(`notes/${id}`)
       .then((note: NoteState) => {
-        dispatch(updateTitle(note.title));
-        dispatch(updateContent(note.content));
-        dispatch(updateTime(note.time));
+        dispatch(updateTitle({ id, value: note.title }));
+        dispatch(updateContent({ id, value: note.content }));
+        dispatch(updateTime({ id, value: note.time }));
       })
       .catch((err: Error) => {
         console.error(err);
@@ -90,6 +88,22 @@ const Note: React.FC = () => {
     el.focus();
   };
 
+  const getcurrentTime = (): string => {
+    const date = new Date();
+    return (
+      date.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+      }) +
+      ", " +
+      date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false,
+      })
+    );
+  };
+
   const handleChange: HandleChange =
     (setterFunc, pathDB, disabledEnter = false) =>
     (e) => {
@@ -105,10 +119,12 @@ const Note: React.FC = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         setIsLoading(true);
-        pushToDB(`notes/note1/${pathDB}`, text).finally(() => {
+        setToDB(`notes/${id}/${pathDB}`, text).finally(() => {
           setIsLoading(false);
         });
-        pushToDB("notes/note1/time", getcurrentTime());
+        setToDB(`notes/${id}/time`, getcurrentTime());
+
+        dispatch(updateTime({ id, value: getcurrentTime() }));
       }, 2000);
     };
 
@@ -140,9 +156,7 @@ const Note: React.FC = () => {
   return (
     <div className={styles.note}>
       <nav>
-        <Link to="/">
-          <KeyboardBackspaceRoundedIcon />
-        </Link>
+        <BackBtn />
         <AutorenewRoundedIcon
           style={{ display: isLoading ? "block" : "none" }}
         />
@@ -158,7 +172,7 @@ const Note: React.FC = () => {
         onKeyDown={handleTitleKeyDown}
         onPaste={handleTitlePaste}
         onInput={handleChange(
-          (p: string) => dispatch(updateTitle(p)),
+          (p: string) => dispatch(updateTitle({ id, value: p })),
           "title",
           true
         )}
@@ -175,7 +189,7 @@ const Note: React.FC = () => {
         spellCheck="false"
         onKeyDown={handleContentKeyDown}
         onInput={handleChange(
-          (p: string) => dispatch(updateContent(p)),
+          (p: string) => dispatch(updateContent({ id, value: p })),
           "content"
         )}
       />

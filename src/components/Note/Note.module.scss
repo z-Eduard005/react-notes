@@ -27,32 +27,13 @@
     width: calc(100% - 2.75rem);
     @apply flex justify-between items-center z-10 fixed top-3 pt-3 pb-1 bg-zinc-800 max-xs:top-0 max-xs:w-[95%];
 
-    // for custom sticky-position
     &::before {
       content: "";
       @apply absolute top-0 -left-3 h-14 w-3 bg-zinc-800 rounded-tl-lg;
     }
 
     >svg {
-      @apply size-10 animate-spin max-md:size-8;
-    }
-
-    a {
-      svg {
-        @apply rounded-md size-10 max-md:size-8 transition-colors duration-300;
-      }
-
-      &:hover {
-        svg {
-          @apply bg-zinc-700;
-        }
-      }
-
-      &:active {
-        svg {
-          @apply bg-zinc-800;
-        }
-      }
+      @apply animate-spin size-10 max-md:size-8;
     }
   }
 

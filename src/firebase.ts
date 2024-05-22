@@ -1,12 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, onValue, ref, set } from "firebase/database";
-import type { NoteState } from "./reducers/noteReducer";
+import { getDatabase, onValue, ref, set, push } from "firebase/database";
+import type { NoteState } from "./reducers/notesReducer";
 
 type ObjectParam = {
   [key: string]: string | number | boolean;
 };
 
-type PushToDB = (
+type AddToDB = (
   path: string,
   value: string | number | boolean | ObjectParam
 ) => Promise<void>;
@@ -20,7 +20,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-export const getdataDB = (path: string): Promise<any> => {
+export const getDataDB = (path: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     onValue(
       ref(database, "users/user1/" + path),
@@ -35,7 +35,8 @@ export const getdataDB = (path: string): Promise<any> => {
   });
 };
 
-export const pushToDB: PushToDB = async (path, value) => {
+// set with id
+export const setToDB: AddToDB = async (path, value) => {
   try {
     await set(ref(database, "users/user1/" + path), value);
   } catch (err) {
@@ -43,14 +44,11 @@ export const pushToDB: PushToDB = async (path, value) => {
   }
 };
 
-// users:
-// - user1:
-//   - id (auto)
-//   - email
-//   - password
-//   - notes:
-//     - note1:
-//       - id (auto)
-//       - title
-//       - content
-//       - time
+// never used!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+export const pushToDB: AddToDB = async (path, value) => {
+  try {
+    await push(ref(database, "users/user1/" + path), value);
+  } catch (err) {
+    console.error(`Error updating ${value}: ${err}`);
+  }
+};
