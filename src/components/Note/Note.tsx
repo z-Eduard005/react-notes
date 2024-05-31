@@ -1,20 +1,19 @@
-import { useEffect, useState, useRef } from "react";
-import styles from "./Note.module.scss";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import { useAppSelector, useAppDispatch } from "../../store/hooks";
+import { useEffect, useRef, useState } from "react";
+import { getCurrentTime, setToDB } from "../../firebase";
 import {
-  updateTitle,
   updateContent,
   updateTime,
+  updateTitle,
 } from "../../reducers/notesReducer";
-import type { NoteState } from "../../reducers/notesReducer";
-import { getDataDB, setToDB } from "../../firebase";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import BackBtn from "../shared/BackBtn/BackBtn";
+import styles from "./Note.module.scss";
+import { store } from "../../store/store";
 
 type HandleChange = (
   setterFunc: (text: string) => void,
-  pathDB: string,
-  disabledEnter?: boolean
+  pathDB: string
 ) => (e: React.ChangeEvent<HTMLDivElement>) => void;
 
 let timeoutId: NodeJS.Timeout;
@@ -31,22 +30,6 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
 
   const refTitleEl = useRef<HTMLDivElement>(null);
   const refContentEl = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setIsLoading(true);
-    getDataDB(`notes/${id}`)
-      .then((note: NoteState) => {
-        dispatch(updateTitle({ id, value: note.title }));
-        dispatch(updateContent({ id, value: note.content }));
-        dispatch(updateTime({ id, value: note.time }));
-      })
-      .catch((err: Error) => {
-        console.error(err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
 
   useEffect(() => {
     refTitleEl.current!.textContent = title;
@@ -88,45 +71,33 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
     el.focus();
   };
 
-  const getcurrentTime = (): string => {
-    const date = new Date();
-    return (
-      date.toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-      }) +
-      ", " +
-      date.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "numeric",
-        hour12: false,
-      })
-    );
-  };
+  const handleChange: HandleChange = (setterFunc, pathDB) => (e) => {
+    let text = e.target.textContent || "";
 
-  const handleChange: HandleChange =
-    (setterFunc, pathDB, disabledEnter = false) =>
-    (e) => {
-      let text = e.target.textContent || "";
+    // disable enter
+    if (pathDB === "title") {
+      text = text.replace(/\n/g, "");
+      e.target.textContent = text;
+    }
 
-      if (disabledEnter) {
-        text = text.replace(/\n/g, "");
-        e.target.textContent = text;
-      }
+    setterFunc(text);
 
-      setterFunc(text);
-
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      if (store.getState().notes.notesArray.some((note) => note.id === id)) {
         setIsLoading(true);
-        setToDB(`notes/${id}/${pathDB}`, text).finally(() => {
+
+        Promise.all([
+          setToDB(`notes/${id}/${pathDB}`, text),
+          setToDB(`notes/${id}/time`, getCurrentTime()),
+        ]).finally(() => {
           setIsLoading(false);
         });
-        setToDB(`notes/${id}/time`, getcurrentTime());
 
-        dispatch(updateTime({ id, value: getcurrentTime() }));
-      }, 2000);
-    };
+        dispatch(updateTime({ id, value: getCurrentTime() }));
+      }
+    }, 2000);
+  };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (
@@ -173,8 +144,7 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
         onPaste={handleTitlePaste}
         onInput={handleChange(
           (p: string) => dispatch(updateTitle({ id, value: p })),
-          "title",
-          true
+          "title"
         )}
       />
       <p>

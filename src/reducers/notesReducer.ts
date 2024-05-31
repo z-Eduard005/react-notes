@@ -1,5 +1,5 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getDataDB } from "../firebase";
+import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { getFromDB } from "../firebase";
 
 export type NoteState = {
   title: string;
@@ -14,6 +14,11 @@ type Notes = {
   error: string | null;
 };
 
+type UpdateAction = {
+  id: string;
+  value: string;
+};
+
 const initialState: Notes = {
   notesArray: [],
   loading: false,
@@ -23,15 +28,17 @@ const initialState: Notes = {
 export const loadNotes = createAsyncThunk<NoteState[]>(
   "notes/loadNotes",
   async () => {
-    const objDB: object = await getDataDB("notes");
-    const notesArray: NoteState[] = [];
+    let notesArray: NoteState[] = [];
 
-    const keys = Object.keys(objDB);
-    const values = Object.values(objDB);
+    const objFromDB: object = await getFromDB("notes");
+    if (objFromDB === null) return notesArray;
+
+    const keys = Object.keys(objFromDB);
+    const values = Object.values(objFromDB);
 
     for (let i = 0; i < keys.length; i++) {
-      const newObject = { ...values[i], id: keys[i] };
-      notesArray.push(newObject);
+      const newObj = { ...values[i], id: keys[i] };
+      notesArray.push(newObj);
     }
 
     return notesArray;
@@ -42,27 +49,23 @@ const notesSlice = createSlice({
   name: "notes",
   initialState,
   reducers: {
-    addNote(state, { payload }: PayloadAction<NoteState>) {
-      state.notesArray.push(payload);
+    removeNote(state, { payload }: PayloadAction<string>) {
+      state.notesArray = state.notesArray.filter((note) => note.id !== payload);
     },
-    updateTitle(
-      state,
-      { payload }: PayloadAction<{ id: string; value: string }>
-    ) {
+    removeEmptyNotes(state) {
+      state.notesArray = state.notesArray.filter(
+        (note) => note.title || note.content
+      );
+    },
+    updateTitle(state, { payload }: PayloadAction<UpdateAction>) {
       const note = state.notesArray.find((note) => note.id === payload.id);
       note && (note.title = payload.value);
     },
-    updateContent(
-      state,
-      { payload }: PayloadAction<{ id: string; value: string }>
-    ) {
+    updateContent(state, { payload }: PayloadAction<UpdateAction>) {
       const note = state.notesArray.find((note) => note.id === payload.id);
       note && (note.content = payload.value);
     },
-    updateTime(
-      state,
-      { payload }: PayloadAction<{ id: string; value: string }>
-    ) {
+    updateTime(state, { payload }: PayloadAction<UpdateAction>) {
       const note = state.notesArray.find((note) => note.id === payload.id);
       note && (note.time = payload.value);
     },
@@ -86,6 +89,11 @@ const notesSlice = createSlice({
   },
 });
 
-export const { addNote, updateTitle, updateContent, updateTime } =
-  notesSlice.actions;
+export const {
+  removeNote,
+  removeEmptyNotes,
+  updateTitle,
+  updateContent,
+  updateTime,
+} = notesSlice.actions;
 export default notesSlice.reducer;

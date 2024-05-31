@@ -6,7 +6,9 @@ const NotFound: React.FC = () => {
     <section className={styles.notFound}>
       <h1>404</h1>
       <p>Page Not Found</p>
-      <BackBtn />
+      <div>
+        <BackBtn />
+      </div>
     </section>
   );
 };

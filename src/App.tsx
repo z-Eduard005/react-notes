@@ -4,14 +4,16 @@ import Note from "./components/Note/Note";
 import { useAppSelector } from "./store/hooks";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 import NotFound from "./components/NotFound/NotFound";
+import { useMemo } from "react";
+import ScrollMemory from "./components/ScrollMemory/ScrollMemory";
 
 const App: React.FC = () => {
-  const ids = useAppSelector((state) =>
-    state.notes.notesArray.map((note) => note.id)
-  );
+  const notesArray = useAppSelector((state) => state.notes.notesArray);
+  const ids = useMemo(() => notesArray.map((note) => note.id), [notesArray]);
 
   return (
     <BrowserRouter>
+      <ScrollMemory />
       <Routes>
         <Route path="/" element={<Home />} />
         {ids.length === 0 ? (
