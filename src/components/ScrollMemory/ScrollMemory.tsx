@@ -18,12 +18,6 @@ const ScrollMemory: React.FC = () => {
 
     document.body.addEventListener("scroll", handleScroll);
 
-    return () => {
-      document.body.removeEventListener("scroll", handleScroll);
-    };
-  }, [pathname]);
-
-  useEffect(() => {
     if (scrollPositions[pathname]) {
       setTimeout(() => {
         document.body.scrollTop = scrollPositions[pathname];
@@ -36,7 +30,11 @@ const ScrollMemory: React.FC = () => {
         document.documentElement.scrollTop = 0;
       }, 0);
     }
-  }, [pathname, scrollPositions]);
+
+    return () => {
+      document.body.removeEventListener("scroll", handleScroll);
+    };
+  }, [pathname]);
 
   return null;
 };

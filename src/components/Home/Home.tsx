@@ -1,71 +1,89 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { useState } from "react";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import { signOut } from "firebase/auth";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentTime, pushToDB } from "../../firebase";
-import { loadNotes } from "../../reducers/notesReducer";
+import { auth, getCurrentTime, pushToDB, removeFromDB } from "../../firebase";
+import {
+  loadNotes,
+  removeEmptyNotes,
+  removeNotesData,
+  toogleNoteCreating,
+} from "../../reducers/notesReducer";
+import { setSearchInput } from "../../reducers/searchReducer";
+import { removeUserData } from "../../reducers/userReducer";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { store } from "../../store/store";
 import Notes from "../Notes/Notes";
+import SearchForm from "../SearchForm/SearchForm";
 import styles from "./Home.module.scss";
-import { setSerchInput } from "../../reducers/searchInputReducer";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { serchInput } = useAppSelector((state) => state.serchInput);
+  const { loading, notesArray, noteCreating } = useAppSelector(
+    (state) => state.notes
+  );
+  const { userName } = useAppSelector((state) => state.user);
 
-  const [isCreating, setIsCreating] = useState<boolean>(false);
+  useEffect(() => {
+    if (!noteCreating) {
+      notesArray
+        .filter((note) => !note.title && !note.content)
+        .forEach((note) => {
+          removeFromDB(`notes/${note.id}`);
+        });
 
-  const createNote = async () => {
-    setIsCreating(true);
+      dispatch(removeEmptyNotes());
+    }
+  }, [noteCreating]);
+
+  const handleCreateNote = async () => {
+    toogleNoteCreating();
+
     await pushToDB("notes", {
       title: "",
       content: "",
       time: getCurrentTime(),
     });
+
+    console.log(notesArray);
     await dispatch(loadNotes());
+    console.log(notesArray);
 
-    const notes = store.getState().notes.notesArray;
+    navigate(`/note/${notesArray[notesArray.length - 1].id}`);
 
-    navigate(`/note/${notes[notes.length - 1].id}`);
-    setIsCreating(false);
+    toogleNoteCreating();
+  };
+
+  const handleSignOut = () => {
+    signOut(auth)
+      .then(() => {
+        dispatch(removeUserData());
+        dispatch(removeNotesData());
+        dispatch(setSearchInput(""));
+      })
+      .catch((err: Error) => console.error(err));
   };
 
   return (
     <>
-      <section className={styles.search}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-          }}
-        >
-          <SearchRoundedIcon />
-          <input
-            type="search"
-            placeholder="Search"
-            value={serchInput}
-            onChange={(e) => {
-              dispatch(setSerchInput(e.target.value));
-            }}
-          />
-          {serchInput && (
-            <button type="reset" onClick={() => dispatch(setSerchInput(""))}>
-              <CloseRoundedIcon />
-            </button>
-          )}
-        </form>
-      </section>
-      <div className={styles.searchMarginBottom} />
+      <button
+        className={styles.signoutBtn}
+        onClick={handleSignOut}
+        disabled={loading}
+      >
+        {userName}
+        <LogoutRoundedIcon />
+      </button>
+      <SearchForm />
       <Notes />
       <button
         className={styles.createBtn}
-        onClick={createNote}
-        disabled={isCreating}
+        onClick={handleCreateNote}
+        disabled={noteCreating}
       >
-        {isCreating ? (
+        {noteCreating ? (
           <AutorenewRoundedIcon className="loader" />
         ) : (
           <AddRoundedIcon />

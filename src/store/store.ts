@@ -1,16 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
-import notesReducer, { loadNotes } from "../reducers/notesReducer";
-import serchInputReducer from "../reducers/searchInputReducer";
+import notesReducer from "../reducers/notesReducer";
+import searchReducer from "../reducers/searchReducer";
+import userReducer from "../reducers/userReducer";
 
 export const store = configureStore({
   reducer: {
     notes: notesReducer,
-    serchInput: serchInputReducer,
+    search: searchReducer,
+    user: userReducer,
   },
 });
-
-// load notes when app starts
-store.dispatch(loadNotes());
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -1,6 +1,6 @@
-import styles from "./BackBtn.module.scss";
-import { Link } from "react-router-dom";
 import KeyboardBackspaceRoundedIcon from "@mui/icons-material/KeyboardBackspaceRounded";
+import { Link } from "react-router-dom";
+import styles from "./BackBtn.module.scss";
 
 const BackBtn: React.FC = () => {
   return (

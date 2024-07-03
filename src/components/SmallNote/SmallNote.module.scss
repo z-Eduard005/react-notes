@@ -1,0 +1,55 @@
+.note {
+  @apply bg-zinc-400 rounded-lg w-full shadow-md shadow-zinc-900 p-3 text-zinc-900 cursor-pointer select-none transition-colors ease-in-out break-words relative;
+
+  &:hover {
+    @apply bg-zinc-500;
+  }
+
+  &:active {
+    @apply bg-zinc-600;
+  }
+
+  .noteTop {
+    @apply flex justify-between items-start mb-1;
+
+    button {
+      @apply ml-1;
+
+      svg {
+        @apply rounded-md size-9 max-md:size-7 transition-colors duration-300;
+      }
+
+      &:hover {
+        svg {
+          @apply bg-zinc-500;
+        }
+      }
+
+      &:active {
+        svg {
+          @apply bg-zinc-600;
+        }
+      }
+    }
+
+    h2 {
+      overflow-wrap: anywhere;
+      @apply text-2xl font-medium;
+    }
+  }
+
+  p {
+    @apply text-lg mb-6
+  }
+
+  p~p {
+    @apply text-sm text-end font-semibold absolute right-3 bottom-3 mb-0 max-sm:text-[13px];
+  }
+}
+
+// if hover also on delete button
+.hoverBtn {
+  &:hover {
+    @apply bg-zinc-400;
+  }
+}

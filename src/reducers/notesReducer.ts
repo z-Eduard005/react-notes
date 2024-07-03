@@ -1,6 +1,11 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { getFromDB } from "../firebase";
 
+type UpdateAction = {
+  id: string;
+  value: string;
+};
+
 export type NoteState = {
   title: string;
   content: string;
@@ -12,17 +17,14 @@ type Notes = {
   notesArray: NoteState[];
   loading: boolean;
   error: string | null;
-};
-
-type UpdateAction = {
-  id: string;
-  value: string;
+  noteCreating: boolean;
 };
 
 const initialState: Notes = {
   notesArray: [],
   loading: false,
   error: null,
+  noteCreating: false,
 };
 
 export const loadNotes = createAsyncThunk<NoteState[]>(
@@ -41,6 +43,7 @@ export const loadNotes = createAsyncThunk<NoteState[]>(
       notesArray.push(newObj);
     }
 
+    console.log(notesArray);
     return notesArray;
   }
 );
@@ -57,17 +60,23 @@ const notesSlice = createSlice({
         (note) => note.title || note.content
       );
     },
-    updateTitle(state, { payload }: PayloadAction<UpdateAction>) {
+    setTitle(state, { payload }: PayloadAction<UpdateAction>) {
       const note = state.notesArray.find((note) => note.id === payload.id);
       note && (note.title = payload.value);
     },
-    updateContent(state, { payload }: PayloadAction<UpdateAction>) {
+    setContent(state, { payload }: PayloadAction<UpdateAction>) {
       const note = state.notesArray.find((note) => note.id === payload.id);
       note && (note.content = payload.value);
     },
-    updateTime(state, { payload }: PayloadAction<UpdateAction>) {
+    setTime(state, { payload }: PayloadAction<UpdateAction>) {
       const note = state.notesArray.find((note) => note.id === payload.id);
       note && (note.time = payload.value);
+    },
+    removeNotesData() {
+      return initialState;
+    },
+    toogleNoteCreating(state) {
+      state.noteCreating = !state.noteCreating;
     },
   },
   extraReducers: (builder) => {
@@ -92,8 +101,10 @@ const notesSlice = createSlice({
 export const {
   removeNote,
   removeEmptyNotes,
-  updateTitle,
-  updateContent,
-  updateTime,
+  setTitle,
+  setContent,
+  setTime,
+  removeNotesData,
+  toogleNoteCreating,
 } = notesSlice.actions;
 export default notesSlice.reducer;

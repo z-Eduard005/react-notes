@@ -1,15 +1,10 @@
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 import { useEffect, useRef, useState } from "react";
 import { getCurrentTime, setToDB } from "../../firebase";
-import {
-  updateContent,
-  updateTime,
-  updateTitle,
-} from "../../reducers/notesReducer";
+import { setContent, setTime, setTitle } from "../../reducers/notesReducer";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import BackBtn from "../shared/BackBtn/BackBtn";
 import styles from "./Note.module.scss";
-import { store } from "../../store/store";
 
 type HandleChange = (
   setterFunc: (text: string) => void,
@@ -20,6 +15,7 @@ let timeoutId: NodeJS.Timeout;
 
 const Note: React.FC<{ id: string }> = ({ id }) => {
   const dispatch = useAppDispatch();
+  const { notesArray } = useAppSelector((state) => state.notes);
   const { title, content, time } = useAppSelector(
     (state) => state.notes.notesArray.find((note) => note.id === id)!
   );
@@ -84,7 +80,7 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
 
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      if (store.getState().notes.notesArray.some((note) => note.id === id)) {
+      if (notesArray.some((note) => note.id === id)) {
         setIsLoading(true);
 
         Promise.all([
@@ -94,12 +90,14 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
           setIsLoading(false);
         });
 
-        dispatch(updateTime({ id, value: getCurrentTime() }));
+        dispatch(setTime({ id, value: getCurrentTime() }));
       }
-    }, 2000);
+    }, 500);
   };
 
-  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleTitleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
+    e
+  ) => {
     if (
       e.key === "Enter" ||
       (refTitleEl.current!.textContent!.length > 399 && e.key !== "Backspace")
@@ -108,7 +106,7 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
     }
   };
 
-  const handleTitlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+  const handleTitlePaste: React.ClipboardEventHandler<HTMLDivElement> = (e) => {
     if (
       e.clipboardData.getData("text").length >
       400 - refTitleEl.current!.textContent!.length
@@ -117,7 +115,9 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
     }
   };
 
-  const handleContentKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleContentKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
+    e
+  ) => {
     if (e.key === "Enter") {
       setEnterPressed(true);
       setStateCursorPosition(getCursorPosition(refContentEl.current!));
@@ -143,12 +143,12 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
         onKeyDown={handleTitleKeyDown}
         onPaste={handleTitlePaste}
         onInput={handleChange(
-          (p: string) => dispatch(updateTitle({ id, value: p })),
+          (p: string) => dispatch(setTitle({ id, value: p })),
           "title"
         )}
       />
       <p>
-        {time} | {content.length} characters
+        {time.slice(0, -3)} | {content.length} characters
       </p>
       <div
         ref={refContentEl}
@@ -159,7 +159,7 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
         spellCheck="false"
         onKeyDown={handleContentKeyDown}
         onInput={handleChange(
-          (p: string) => dispatch(updateContent({ id, value: p })),
+          (p: string) => dispatch(setContent({ id, value: p })),
           "content"
         )}
       />

@@ -1,0 +1,60 @@
+.search {
+  @apply w-full fixed top-6 max-xs:top-3 z-10 pointer-events-none;
+
+  form {
+    @apply flex items-center rounded-md text-zinc-900 bg-zinc-100 shadow-md shadow-zinc-900 w-1/2 pl-3 max-md:pl-2 pointer-events-auto transition-all;
+
+    @media (max-width: 575.5px) {
+      width: calc(100% - 16rem);
+    }
+
+    @media (max-width: 431px) {
+      width: calc(100% - 13rem);
+    }
+
+    @media (max-width: 375px) {
+      width: calc(100% - 12rem);
+    }
+
+    &:focus-within {
+      width: calc(100% - 3rem);
+
+      @media (max-width: 431px) {
+        width: calc(100% - 1.495rem);
+      }
+    }
+
+    svg {
+      @apply text-zinc-400;
+    }
+
+    input {
+      @apply outline-none block py-2 px-3 max-md:px-2 text-2xl max-sm:text-xl max-xs:text-lg w-full rounded-[inherit] bg-inherit;
+
+      &::-webkit-search-cancel-button {
+        -webkit-appearance: none;
+      }
+
+      &::placeholder {
+        @apply text-zinc-400
+      }
+    }
+
+    button {
+      @apply rounded-md transition-colors duration-300 mr-3 max-md:mr-2;
+
+      &:hover {
+        @apply bg-zinc-400;
+      }
+
+      svg {
+        @apply text-zinc-900;
+      }
+    }
+  }
+}
+
+// for custom sticky-position
+.searchMarginBottom {
+  @apply h-20 max-2xs:h-16;
+}
