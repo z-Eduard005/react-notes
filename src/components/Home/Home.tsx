@@ -2,58 +2,57 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import AutorenewRoundedIcon from "@mui/icons-material/AutorenewRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import { signOut } from "firebase/auth";
-import { useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, getCurrentTime, pushToDB, removeFromDB } from "../../firebase";
-import {
-  loadNotes,
-  removeEmptyNotes,
-  removeNotesData,
-  toogleNoteCreating,
-} from "../../reducers/notesReducer";
+import { loadNotes, removeNotesData } from "../../reducers/notesReducer";
 import { setSearchInput } from "../../reducers/searchReducer";
 import { removeUserData } from "../../reducers/userReducer";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import Notes from "../Notes/Notes";
 import SearchForm from "../SearchForm/SearchForm";
 import styles from "./Home.module.scss";
+import type { NoteState } from "../../reducers/notesReducer";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { loading, notesArray, noteCreating } = useAppSelector(
-    (state) => state.notes
-  );
+  const { loading } = useAppSelector((state) => state.notes);
   const { userName } = useAppSelector((state) => state.user);
 
-  useEffect(() => {
-    if (!noteCreating) {
-      notesArray
-        .filter((note) => !note.title && !note.content)
-        .forEach((note) => {
-          removeFromDB(`notes/${note.id}`);
-        });
+  const [noteCreating, setNoteCreating] = useState<boolean>(false);
 
-      dispatch(removeEmptyNotes());
-    }
-  }, [noteCreating]);
+  // useEffect(() => {
+  //   if (!noteCreating) {
+  // notesArray
+  //   .filter((note) => !note.title && !note.content)
+  //   .forEach((note) => {
+  //     removeFromDB(`notes/${note.id}`);
+  //   });
 
-  const handleCreateNote = async () => {
-    toogleNoteCreating();
+  // dispatch(removeEmptyNotes());
+  //   }
+  // }, [noteCreating]);
 
-    await pushToDB("notes", {
+  const handleCreateNote = () => {
+    setNoteCreating(true);
+
+    pushToDB("notes", {
       title: "",
       content: "",
       time: getCurrentTime(),
-    });
-
-    console.log(notesArray);
-    await dispatch(loadNotes());
-    console.log(notesArray);
-
-    navigate(`/note/${notesArray[notesArray.length - 1].id}`);
-
-    toogleNoteCreating();
+    })
+      .then(() => {
+        return dispatch(loadNotes());
+      })
+      .then((data) => {
+        const localNotesArray = data.payload as NoteState[];
+        navigate(`/note/${localNotesArray[localNotesArray.length - 1].id}`);
+      })
+      .catch((err: Error) => console.error(err))
+      .finally(() => {
+        setNoteCreating(false);
+      });
   };
 
   const handleSignOut = () => {

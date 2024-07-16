@@ -17,14 +17,12 @@ type Notes = {
   notesArray: NoteState[];
   loading: boolean;
   error: string | null;
-  noteCreating: boolean;
 };
 
 const initialState: Notes = {
   notesArray: [],
   loading: false,
   error: null,
-  noteCreating: false,
 };
 
 export const loadNotes = createAsyncThunk<NoteState[]>(
@@ -43,7 +41,6 @@ export const loadNotes = createAsyncThunk<NoteState[]>(
       notesArray.push(newObj);
     }
 
-    console.log(notesArray);
     return notesArray;
   }
 );
@@ -55,11 +52,11 @@ const notesSlice = createSlice({
     removeNote(state, { payload }: PayloadAction<string>) {
       state.notesArray = state.notesArray.filter((note) => note.id !== payload);
     },
-    removeEmptyNotes(state) {
-      state.notesArray = state.notesArray.filter(
-        (note) => note.title || note.content
-      );
-    },
+    // removeEmptyNotes(state) {
+    //   state.notesArray = state.notesArray.filter(
+    //     (note) => note.title || note.content
+    //   );
+    // },
     setTitle(state, { payload }: PayloadAction<UpdateAction>) {
       const note = state.notesArray.find((note) => note.id === payload.id);
       note && (note.title = payload.value);
@@ -74,9 +71,6 @@ const notesSlice = createSlice({
     },
     removeNotesData() {
       return initialState;
-    },
-    toogleNoteCreating(state) {
-      state.noteCreating = !state.noteCreating;
     },
   },
   extraReducers: (builder) => {
@@ -100,11 +94,10 @@ const notesSlice = createSlice({
 
 export const {
   removeNote,
-  removeEmptyNotes,
+  // removeEmptyNotes,
   setTitle,
   setContent,
   setTime,
   removeNotesData,
-  toogleNoteCreating,
 } = notesSlice.actions;
 export default notesSlice.reducer;
