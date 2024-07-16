@@ -25,7 +25,7 @@
 
   nav {
     width: calc(100% - 2.75rem);
-    @apply flex justify-between items-center z-10 fixed top-3 pt-3 pb-1 bg-zinc-800 max-xs:top-0 max-xs:w-[95%];
+    @apply flex justify-between items-center z-10 fixed top-3 pt-3 pb-1 bg-zinc-800 max-xs:w-[95%] max-xs:top-0;
 
     &::before {
       content: "";

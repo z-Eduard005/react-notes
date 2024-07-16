@@ -43,7 +43,7 @@
   }
 
   p~p {
-    @apply text-sm text-end font-semibold absolute right-3 bottom-3 mb-0 max-sm:text-[13px];
+    @apply text-sm text-end font-semibold absolute right-3 bottom-3 max-sm:text-[13px] mb-0;
   }
 }
 
