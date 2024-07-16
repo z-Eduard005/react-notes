@@ -4,7 +4,7 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import { signOut } from "firebase/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth, getCurrentTime, pushToDB, removeFromDB } from "../../firebase";
+import { auth, getCurrentTime, pushToDB } from "../../firebase";
 import { loadNotes, removeNotesData } from "../../reducers/notesReducer";
 import { setSearchInput } from "../../reducers/searchReducer";
 import { removeUserData } from "../../reducers/userReducer";
