@@ -1,5 +1,5 @@
 .signoutBtn {
-  @apply z-10 absolute right-6 max-xs:right-3 top-8 max-xs:top-5 px-1 bg-zinc-600 shadow-md flex items-center rounded transition-colors duration-300 max-xs:text-sm max-2xs:text-xs;
+  @apply z-10 absolute right-6 max-xs:right-3 top-8 max-xs:top-5 px-1 bg-zinc-600 shadow-lg flex items-center rounded transition-colors duration-300 max-xs:text-sm max-2xs:text-xs;
 
   svg {
     @apply ml-1 size-8 max-sm:size-7 scale-90;
