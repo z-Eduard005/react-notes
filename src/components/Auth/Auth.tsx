@@ -25,11 +25,8 @@ const Auth: React.FC = () => {
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     if (isSignUp) {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          dispatch(toogleIsSigningUp());
-        })
-        .catch(errHandling);
+      dispatch(toogleIsSigningUp());
+      createUserWithEmailAndPassword(auth, email, password).catch(errHandling);
     } else {
       signInWithEmailAndPassword(auth, email, password).catch(errHandling);
     }
