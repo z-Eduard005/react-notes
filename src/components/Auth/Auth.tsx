@@ -18,20 +18,21 @@ const Auth: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [isSignUp, setIsSignUp] = useState<boolean>(true);
 
-  const errHandling = (fn: Promise<UserCredential>) => {
-    fn.catch((err: { code: string }) => {
-      setError(`Error: ${err.code.split("/")[1]}`);
-      console.error(err);
-    });
+  const errHandling = (err: { code: string }) => {
+    setError(`Error: ${err.code.split("/")[1]}`);
+    console.error(err);
   };
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     if (isSignUp) {
-      dispatch(toogleIsSigningUp());
-      errHandling(createUserWithEmailAndPassword(auth, email, password));
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          dispatch(toogleIsSigningUp());
+        })
+        .catch(errHandling);
     } else {
-      errHandling(signInWithEmailAndPassword(auth, email, password));
+      signInWithEmailAndPassword(auth, email, password).catch(errHandling);
     }
   };
 

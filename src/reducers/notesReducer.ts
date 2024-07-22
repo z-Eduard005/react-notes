@@ -77,6 +77,7 @@ const notesSlice = createSlice({
     builder
       .addCase(loadNotes.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(
         loadNotes.fulfilled,
