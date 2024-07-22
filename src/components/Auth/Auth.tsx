@@ -8,6 +8,8 @@ import { setUserName, toogleIsSigningUp } from "../../reducers/userReducer";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import styles from "./Auth.module.scss";
 
+type Err = { code: string };
+
 const Auth: React.FC = () => {
   const dispatch = useAppDispatch();
   const { userName } = useAppSelector((state) => state.user);
@@ -17,7 +19,7 @@ const Auth: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [isSignUp, setIsSignUp] = useState<boolean>(true);
 
-  const errHandling = (err: { code: string }) => {
+  const errHandling = (err: Err) => {
     setError(`Error: ${err.code.split("/")[1]}`);
     console.error(err);
   };
@@ -26,7 +28,12 @@ const Auth: React.FC = () => {
     e.preventDefault();
     if (isSignUp) {
       dispatch(toogleIsSigningUp());
-      createUserWithEmailAndPassword(auth, email, password).catch(errHandling);
+      createUserWithEmailAndPassword(auth, email, password).catch(
+        (err: Err) => {
+          dispatch(toogleIsSigningUp());
+          errHandling(err);
+        }
+      );
     } else {
       signInWithEmailAndPassword(auth, email, password).catch(errHandling);
     }
