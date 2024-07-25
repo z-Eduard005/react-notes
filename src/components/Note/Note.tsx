@@ -42,28 +42,50 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
   }, [content]);
 
   const getCursorPosition = (el: HTMLDivElement): number => {
-    let cursorOffset = 0;
     const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const preCaretRange = range.cloneRange();
-      preCaretRange.selectNodeContents(el);
-      preCaretRange.setEnd(range.endContainer, range.endOffset);
-      cursorOffset = preCaretRange.toString().length;
-    }
+    if (!selection || selection.rangeCount === 0) return 0;
+
+    const range = selection.getRangeAt(0);
+    const preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(el);
+    preCaretRange.setEnd(range.endContainer, range.endOffset);
+
+    const tempElement = document.createElement("div");
+    tempElement.appendChild(preCaretRange.cloneContents());
+    const cursorOffset = tempElement.innerHTML.length;
+
     return cursorOffset;
   };
+
   const setCursorPosition = (el: HTMLDivElement, pos: number): void => {
     const range = document.createRange();
     const selection = window.getSelection();
-    if (el.firstChild) {
-      range.setStart(el.firstChild, pos);
+
+    let currentNode: Node | null = el;
+    let currentPos = 0;
+
+    // Traverse the node tree to find the position
+    while (currentNode) {
+      if (currentNode.nodeType === Node.TEXT_NODE) {
+        const textLength = (currentNode as Text).length;
+        if (currentPos + textLength >= pos) {
+          range.setStart(currentNode, pos - currentPos);
+          range.collapse(true);
+          break;
+        }
+        currentPos += textLength;
+      } else {
+        currentNode = currentNode.firstChild;
+        continue;
+      }
+      currentNode = currentNode.nextSibling;
     }
-    range.collapse(true);
+
     if (selection) {
       selection.removeAllRanges();
       selection.addRange(range);
     }
+
     el.focus();
   };
 
