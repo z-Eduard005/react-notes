@@ -41,52 +41,63 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
     }
   }, [content]);
 
-  const getCursorPosition = (el: HTMLDivElement): number => {
+  const getCursorPosition = (element: HTMLDivElement): number => {
+    let position = 0;
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return 0;
-
-    const range = selection.getRangeAt(0);
-    const preCaretRange = range.cloneRange();
-    preCaretRange.selectNodeContents(el);
-    preCaretRange.setEnd(range.endContainer, range.endOffset);
-
-    const tempElement = document.createElement("div");
-    tempElement.appendChild(preCaretRange.cloneContents());
-    const cursorOffset = tempElement.innerHTML.length;
-
-    return cursorOffset;
+    if (selection && selection.rangeCount !== 0) {
+      const range = selection.getRangeAt(0);
+      const preCaretRange = range.cloneRange();
+      preCaretRange.selectNodeContents(element);
+      preCaretRange.setEnd(range.endContainer, range.endOffset);
+      position = preCaretRange.toString().length;
+    }
+    return position;
   };
 
-  const setCursorPosition = (el: HTMLDivElement, pos: number): void => {
+  const setCursorPosition = (
+    element: HTMLDivElement,
+    position: number
+  ): void => {
+    if (!element.firstChild) {
+      element.appendChild(document.createTextNode(""));
+    }
     const range = document.createRange();
     const selection = window.getSelection();
-
-    let currentNode: Node | null = el;
-    let currentPos = 0;
-
-    // Traverse the node tree to find the position
+    let currentNode: ChildNode | null = element.firstChild;
+    let currentPosition = 0;
     while (currentNode) {
       if (currentNode.nodeType === Node.TEXT_NODE) {
-        const textLength = (currentNode as Text).length;
-        if (currentPos + textLength >= pos) {
-          range.setStart(currentNode, pos - currentPos);
+        const textNode = currentNode as Text;
+        const nodeLength = textNode.length;
+        if (currentPosition + nodeLength >= position) {
+          range.setStart(
+            textNode,
+            Math.min(position - currentPosition, nodeLength)
+          );
           range.collapse(true);
-          break;
+          if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+          element.focus();
+          const rect = range.getBoundingClientRect();
+          const elementRect = element.getBoundingClientRect();
+          if (rect.top < elementRect.top || rect.bottom > elementRect.bottom) {
+            element.scrollTop = rect.top - elementRect.top;
+          }
+          return;
         }
-        currentPos += textLength;
-      } else {
-        currentNode = currentNode.firstChild;
-        continue;
+        currentPosition += nodeLength;
       }
       currentNode = currentNode.nextSibling;
     }
-
+    range.selectNodeContents(element);
+    range.collapse(false);
     if (selection) {
       selection.removeAllRanges();
       selection.addRange(range);
     }
-
-    el.focus();
+    element.focus();
   };
 
   const handleChange: HandleChange = (setterFunc, pathDB) => (e) => {
