@@ -101,6 +101,10 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
   };
 
   const handleChange: HandleChange = (setterFunc, pathDB) => (e) => {
+    e.preventDefault();
+    const selection = window.getSelection();
+    const range = selection?.getRangeAt(0);
+    const offset = range?.startOffset || 0;
     let text = e.target.textContent || "";
 
     // disable enter
@@ -110,6 +114,17 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
     }
 
     setterFunc(text);
+
+    setTimeout(() => {
+      const newRange = document.createRange();
+      newRange.setStart(
+        e.currentTarget.childNodes[0] || e.currentTarget,
+        Math.min(offset, text.length)
+      );
+      newRange.collapse(true);
+      selection?.removeAllRanges();
+      selection?.addRange(newRange);
+    }, 0);
 
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
