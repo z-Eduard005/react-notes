@@ -20,91 +20,17 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
     (state) => state.notes.notesArray.find((note) => note.id === id)!
   );
 
-  const [enterPressed, setEnterPressed] = useState<boolean>(false);
-  const [stateCursorPosition, setStateCursorPosition] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const refTitleEl = useRef<HTMLDivElement>(null);
   const refContentEl = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    refTitleEl.current!.textContent = title;
-  }, [title]);
-
-  useEffect(() => {
     refContentEl.current!.textContent = content;
-
-    // fixed cursor position of contentEditable element
-    if (enterPressed) {
-      setCursorPosition(refContentEl.current!, stateCursorPosition + 1);
-      setEnterPressed(false);
-    }
-  }, [content]);
-
-  const getCursorPosition = (element: HTMLDivElement): number => {
-    let position = 0;
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount !== 0) {
-      const range = selection.getRangeAt(0);
-      const preCaretRange = range.cloneRange();
-      preCaretRange.selectNodeContents(element);
-      preCaretRange.setEnd(range.endContainer, range.endOffset);
-      position = preCaretRange.toString().length;
-    }
-    return position;
-  };
-
-  const setCursorPosition = (
-    element: HTMLDivElement,
-    position: number
-  ): void => {
-    if (!element.firstChild) {
-      element.appendChild(document.createTextNode(""));
-    }
-    const range = document.createRange();
-    const selection = window.getSelection();
-    let currentNode: ChildNode | null = element.firstChild;
-    let currentPosition = 0;
-    while (currentNode) {
-      if (currentNode.nodeType === Node.TEXT_NODE) {
-        const textNode = currentNode as Text;
-        const nodeLength = textNode.length;
-        if (currentPosition + nodeLength >= position) {
-          range.setStart(
-            textNode,
-            Math.min(position - currentPosition, nodeLength)
-          );
-          range.collapse(true);
-          if (selection) {
-            selection.removeAllRanges();
-            selection.addRange(range);
-          }
-          element.focus();
-          const rect = range.getBoundingClientRect();
-          const elementRect = element.getBoundingClientRect();
-          if (rect.top < elementRect.top || rect.bottom > elementRect.bottom) {
-            element.scrollTop = rect.top - elementRect.top;
-          }
-          return;
-        }
-        currentPosition += nodeLength;
-      }
-      currentNode = currentNode.nextSibling;
-    }
-    range.selectNodeContents(element);
-    range.collapse(false);
-    if (selection) {
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
-    element.focus();
-  };
+    refTitleEl.current!.textContent = title;
+  }, []);
 
   const handleChange: HandleChange = (setterFunc, pathDB) => (e) => {
-    e.preventDefault();
-    const selection = window.getSelection();
-    const range = selection?.getRangeAt(0);
-    const offset = range?.startOffset || 0;
     let text = e.target.textContent || "";
 
     // disable enter
@@ -115,30 +41,20 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
 
     setterFunc(text);
 
-    setTimeout(() => {
-      const newRange = document.createRange();
-      newRange.setStart(
-        e.currentTarget.childNodes[0] || e.currentTarget,
-        Math.min(offset, text.length)
-      );
-      newRange.collapse(true);
-      selection?.removeAllRanges();
-      selection?.addRange(newRange);
-    }, 0);
-
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       if (notesArray.some((note) => note.id === id)) {
         setIsLoading(true);
 
+        const currentTime = getCurrentTime();
         Promise.all([
           setToDB(`notes/${id}/${pathDB}`, text),
-          setToDB(`notes/${id}/time`, getCurrentTime()),
+          setToDB(`notes/${id}/time`, currentTime),
         ]).finally(() => {
           setIsLoading(false);
         });
 
-        dispatch(setTime({ id, value: getCurrentTime() }));
+        dispatch(setTime({ id, value: currentTime }));
       }
     }, 500);
   };
@@ -160,15 +76,6 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
       400 - refTitleEl.current!.textContent!.length
     ) {
       e.preventDefault();
-    }
-  };
-
-  const handleContentKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
-    e
-  ) => {
-    if (e.key === "Enter") {
-      setEnterPressed(true);
-      setStateCursorPosition(getCursorPosition(refContentEl.current!));
     }
   };
 
@@ -205,7 +112,6 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
         contentEditable="plaintext-only"
         role="textbox"
         spellCheck="false"
-        onKeyDown={handleContentKeyDown}
         onInput={handleChange(
           (p: string) => dispatch(setContent({ id, value: p })),
           "content"
