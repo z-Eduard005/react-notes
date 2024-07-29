@@ -6,12 +6,15 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import BackBtn from "../shared/BackBtn/BackBtn";
 import styles from "./Note.module.scss";
 
-type HandleChange = (
-  setterFunc: (text: string) => void,
-  pathDB: string
-) => (e: React.ChangeEvent<HTMLDivElement>) => void;
+const MAX_TITLE_LENGTH = 400;
+const DEBOUNCE_DELAY = 500;
 
 let timeoutId: NodeJS.Timeout;
+
+type HandleChange = (
+  e: React.FormEvent<HTMLDivElement>,
+  pathDB: "title" | "content"
+) => void;
 
 const Note: React.FC<{ id: string }> = ({ id }) => {
   const dispatch = useAppDispatch();
@@ -30,16 +33,11 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
     refTitleEl.current!.textContent = title;
   }, []);
 
-  const handleChange: HandleChange = (setterFunc, pathDB) => (e) => {
-    let text = e.target.textContent || "";
+  const handleChange: HandleChange = (e, pathDB) => {
+    const text = (e.target as HTMLDivElement).textContent || "";
+    const setterFn = pathDB === "title" ? setTitle : setContent;
 
-    // disable enter
-    if (pathDB === "title") {
-      text = text.replace(/\n/g, "");
-      e.target.textContent = text;
-    }
-
-    setterFunc(text);
+    dispatch(setterFn({ id, value: text }));
 
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
@@ -50,13 +48,15 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
         Promise.all([
           setToDB(`notes/${id}/${pathDB}`, text),
           setToDB(`notes/${id}/time`, currentTime),
-        ]).finally(() => {
-          setIsLoading(false);
-        });
+        ])
+          .catch((err: Error) => console.error(err))
+          .finally(() => {
+            setIsLoading(false);
+          });
 
         dispatch(setTime({ id, value: currentTime }));
       }
-    }, 500);
+    }, DEBOUNCE_DELAY);
   };
 
   const handleTitleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (
@@ -64,16 +64,19 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
   ) => {
     if (
       e.key === "Enter" ||
-      (refTitleEl.current!.textContent!.length > 399 && e.key !== "Backspace")
+      (refTitleEl.current!.textContent!.length > MAX_TITLE_LENGTH - 1 &&
+        e.key !== "Backspace")
     ) {
       e.preventDefault();
     }
   };
 
   const handleTitlePaste: React.ClipboardEventHandler<HTMLDivElement> = (e) => {
+    const cbData = e.clipboardData.getData("text");
     if (
-      e.clipboardData.getData("text").length >
-      400 - refTitleEl.current!.textContent!.length
+      cbData.length >
+        MAX_TITLE_LENGTH - refTitleEl.current!.textContent!.length ||
+      cbData.includes("\n")
     ) {
       e.preventDefault();
     }
@@ -83,9 +86,7 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
     <div className={styles.note}>
       <nav>
         <BackBtn />
-        <AutorenewRoundedIcon
-          style={{ display: isLoading ? "block" : "none" }}
-        />
+        {isLoading && <AutorenewRoundedIcon />}
       </nav>
       <div className={styles.noteMarginBottom} />
       <div
@@ -97,10 +98,7 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
         spellCheck="false"
         onKeyDown={handleTitleKeyDown}
         onPaste={handleTitlePaste}
-        onInput={handleChange(
-          (p: string) => dispatch(setTitle({ id, value: p })),
-          "title"
-        )}
+        onInput={(e) => handleChange(e, "title")}
       />
       <p>
         {time.slice(0, -3)} | {content.length} characters
@@ -112,10 +110,7 @@ const Note: React.FC<{ id: string }> = ({ id }) => {
         contentEditable="plaintext-only"
         role="textbox"
         spellCheck="false"
-        onInput={handleChange(
-          (p: string) => dispatch(setContent({ id, value: p })),
-          "content"
-        )}
+        onInput={(e) => handleChange(e, "content")}
       />
     </div>
   );
