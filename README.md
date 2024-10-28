@@ -1,10 +1,6 @@
-https://master--react-enotes.netlify.app/
-https://master--react-enotes.netlify.app/
-https://master--react-enotes.netlify.app/
+### Notes app
+**Technologies:** React, Redux, Typescript, Tailwind, Firebase
 
-In this project, I decided to use the following technologies:
-- TypeScript
-- Redux
-- react-router-dom
-- Firebase
-- tailwind-css
+Simple notes application that allows users to create, delete and search notes. Includes user registration and database storage for notes. The project demonstrates proficiency in front-end development and state management.
+
+[Link](https://master--react-enotes.netlify.app/)
